@@ -14,15 +14,19 @@ DB_PORT = int(os.getenv("DB_PORT", 3306))
 def connect_db():
     """连接到 Zeabur 的 MySQL 数据库"""
     return pymysql.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, port=DB_PORT
+        host=DB_HOST, 
+        user=DB_USER, 
+        password=DB_PASS, 
+        database=DB_NAME, 
+        port=DB_PORT,
+        charset='utf8mb4'  # 👉 新增：强制使用中文 UTF-8 编码
     )
 
 def crawl_and_save():
     """核心抓取与存储逻辑"""
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 🚀 开始执行全网舆情抓取任务...")
     
-    # 这里是模拟思通的抓取逻辑（由于脱水，这里先搭好框架）
-    # 实际中我们会接入具体的微博/新闻解析代码
+    # 模拟抓取到的中文数据
     mock_data = [
         {"title": "半导体行业最新突破", "source": "科技新闻", "sentiment": "positive"},
         {"title": "某大厂AI模型发布", "source": "微博热搜", "sentiment": "neutral"}
@@ -31,7 +35,7 @@ def crawl_and_save():
     try:
         conn = connect_db()
         cursor = conn.cursor()
-        # 建表（如果不存在）
+        # 👉 新增：建表时强制指定 utf8mb4 字符集
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS public_opinion (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -39,8 +43,9 @@ def crawl_and_save():
                 source VARCHAR(100),
                 sentiment VARCHAR(50),
                 crawl_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+            ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
         """)
+        
         # 写入数据
         for item in mock_data:
             cursor.execute(
